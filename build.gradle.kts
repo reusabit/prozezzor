@@ -1,7 +1,8 @@
 plugins {
   id("org.jetbrains.kotlin.jvm") version "1.4.21"
   //id("org.openjfx.javafxplugin") version "0.0.9"
-  id ("com.github.jk1.dependency-license-report") version "1.16"
+  id("com.github.jk1.dependency-license-report") version "1.16"
+  id("com.install4j.gradle") version "8.0.10"
   application
 }
 
@@ -39,6 +40,14 @@ dependencies {
   //implementation("org.openjfx:javafx:15.0.1")
 }
 
+//Workaround for https://github.com/gradle/kotlin-dsl-samples/issues/1368
+//per https://stackoverflow.com/questions/55456176/unresolved-reference-compilekotlin-in-build-gradle-kts
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions {
+    jvmTarget = "11"
+  }
+}
+
 application {
   // Define the main class for the application.
   mainClass.set("com.reusabit.prozezzor.ProzezzorKt")
@@ -47,4 +56,12 @@ application {
 licenseReport {
   //Outputs in build/reports/dependency-license
   renderers = arrayOf(com.github.jk1.license.render.TextReportRenderer("third-party-licenses.txt"))
+}
+
+install4j {
+  installDir = file("""C:\Program Files\install4j8""")
+}
+
+tasks.create("buildInstaller", com.install4j.gradle.Install4jTask::class.java) {
+  projectFile=file("install.install4j")
 }
