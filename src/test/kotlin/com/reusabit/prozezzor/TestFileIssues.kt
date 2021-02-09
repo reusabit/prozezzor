@@ -6,6 +6,7 @@ import org.junit.Test
 import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.NotDirectoryException
+import java.nio.file.FileAlreadyExistsException
 
 class TestFileIssues {
   @Test
@@ -13,7 +14,7 @@ class TestFileIssues {
     val outputFile = Files.createTempFile("prozezzor-test-output", ".xlsx").toFile()
     val parentDir = Files.createTempDirectory("prozezzor-test-output-dir").toFile()
     val nonExistentInputDir = parentDir.resolve("non-existent-dir")
-    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, nonExistentInputDir, outputFile)
+    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, nonExistentInputDir, outputFile, false)
     assertThatThrownBy {
       doProcessing(programOptions)
     }
@@ -26,7 +27,7 @@ class TestFileIssues {
     val outputFile = Files.createTempFile("prozezzor-test-output", ".xlsx").toFile()
     val parentDir = Files.createTempDirectory("prozezzor-test-output-dir").toFile()
     val nonExistentInputDir = parentDir.resolve("non-existent-dir")
-    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, nonExistentInputDir, outputFile)
+    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, nonExistentInputDir, outputFile, false)
     val error = doProcessingCatchExceptions(programOptions)
 
     assertThat(error)
@@ -35,16 +36,29 @@ class TestFileIssues {
   }
 
   @Test
-  fun testOutputFileIsDirectory() {
+  fun testOutputFileIsDirectoryOverwriteDisabled() {
     val outputFileIsDirectory = Files.createTempDirectory("prozezzor-test-output-file-is-dir").toFile()
     val inputDir = Files.createTempDirectory("prozezzor-test-input-dir").toFile()
-    val programOptions=ProgramOptions(AppMode.NON_INTERACTIVE, inputDir, outputFileIsDirectory)
+    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, inputDir, outputFileIsDirectory, false)
 
-    assertThatThrownBy{
+    assertThatThrownBy {
       doProcessing(programOptions)
     }
-    .isInstanceOf(FileNotFoundException::class.java)
-    .hasMessageContaining("Access")
+    .isInstanceOf(FileAlreadyExistsException::class.java)
+    .hasMessageContaining("directory")
+  }
+
+  @Test
+  fun testOutputFileIsDirectoryOverwriteEnabled() {
+    val outputFileIsDirectory = Files.createTempDirectory("prozezzor-test-output-file-is-dir").toFile()
+    val inputDir = Files.createTempDirectory("prozezzor-test-input-dir").toFile()
+    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, inputDir, outputFileIsDirectory, true)
+
+    assertThatThrownBy {
+      doProcessing(programOptions)
+    }
+    .isInstanceOf(FileAlreadyExistsException::class.java)
+    .hasMessageContaining("directory")
   }
 
   @Test
@@ -53,9 +67,9 @@ class TestFileIssues {
     .resolve("non-existent-parent/output.xlsx")
 
     val inputDir = Files.createTempDirectory("prozezzor-test-input-dir").toFile()
-    val programOptions=ProgramOptions(AppMode.NON_INTERACTIVE, inputDir, outputFileNonExistentParent)
+    val programOptions = ProgramOptions(AppMode.NON_INTERACTIVE, inputDir, outputFileNonExistentParent, false)
 
-    assertThatThrownBy{
+    assertThatThrownBy {
       doProcessing(programOptions)
     }
     .isInstanceOf(FileNotFoundException::class.java)
@@ -63,19 +77,34 @@ class TestFileIssues {
   }
 
   @Test
-  fun testOutputFileAlreadyExists() {
-    @Test
-    fun testOutputFileAlreadyExists() {
+  fun testOutputFileAlreadyExistsOverwriteDisabled() {
       val outputFileAlreadyExists = Files.createTempFile("prozezzor-test-output-file-", ".xlsx").toFile()
       val inputDir = Files.createTempDirectory("prozezzor-test-input-dir").toFile()
-      val programOptions=ProgramOptions(AppMode.NON_INTERACTIVE, inputDir, outputFileAlreadyExists)
+      val programOptions = ProgramOptions(
+        mode = AppMode.NON_INTERACTIVE,
+        inputDir = inputDir,
+        outputFile = outputFileAlreadyExists,
+        overwriteOutputFile = false
+      )
 
-      //assertThatThrownBy{
+      assertThatThrownBy {
         doProcessing(programOptions)
-      //}
-      //.isInstanceOf(FileNotFoundException::class.java)
-      //.hasMessageContaining("path")
+      }
+      .isInstanceOf(FileAlreadyExistsException::class.java)
+      .hasMessageContaining("overwrite")
     }
 
+  @Test
+  fun testOutputFileAlreadyExistsOverwriteEnabled() {
+      val outputFileAlreadyExists = Files.createTempFile("prozezzor-test-output-file-", ".xlsx").toFile()
+      val inputDir = Files.createTempDirectory("prozezzor-test-input-dir").toFile()
+      val programOptions = ProgramOptions(
+        mode = AppMode.NON_INTERACTIVE,
+        inputDir = inputDir,
+        outputFile = outputFileAlreadyExists,
+        overwriteOutputFile = true
+      )
+
+      doProcessing(programOptions)
   }
 }

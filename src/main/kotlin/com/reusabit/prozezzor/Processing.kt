@@ -9,6 +9,7 @@ import java.io.UncheckedIOException
 import java.lang.RuntimeException
 import java.lang.StringBuilder
 import java.nio.file.AccessDeniedException
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.NotDirectoryException
 import java.util.*
@@ -46,7 +47,8 @@ fun doProcessing(programOptions: ProgramOptions) {
   //}
 
   val workbook = buildSpreadsheet(records)
-  writeSpreadsheet(workbook, programOptions.outputFile)
+
+  writeSpreadsheet(workbook, programOptions.outputFile, programOptions.overwriteOutputFile)
 }
 
 private val MAX_FILES_TO_PROCESS = 2000
