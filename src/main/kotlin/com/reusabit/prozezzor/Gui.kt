@@ -10,12 +10,8 @@ import java.awt.Toolkit
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
-import java.io.UncheckedIOException
 import java.net.URI
-import java.nio.file.AccessDeniedException
 import javax.swing.JButton
-import javax.swing.JDialog
-import javax.swing.JEditorPane
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JLabel
@@ -24,15 +20,8 @@ import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextArea
 import javax.swing.JTextField
-import javax.swing.JTextPane
-import javax.swing.border.EmptyBorder
-import javax.swing.border.EtchedBorder
 import javax.swing.filechooser.FileNameExtensionFilter
-import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.StyleConstants
 
 
 private val HELP_URL = "https://reusabit.com/prozezzor/help"
@@ -213,7 +202,7 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         val tempFile = File.createTempFile("prozezzor-third-party-notice-", ".txt")
         val text = getNoticeText()
         tempFile.writeText(text, Charsets.UTF_8)
-        Desktop.getDesktop().edit(tempFile);
+        Desktop.getDesktop().edit(tempFile)
       } else {
         JOptionPane.showMessageDialog(this, "Unable to open text editor", "Error", JOptionPane.ERROR_MESSAGE)
       }
@@ -380,22 +369,16 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         )
       } else {
         val programOptions0 = programOptions.build()
-        try {
-          doProcessing(programOptions0)
+        val error = doProcessingCatchExceptions(programOptions0)
+        if (error == null) {
           JOptionPane.showMessageDialog(
             this,
             "The spreadsheet was created successfully. Saved to ${programOptions.outputFile}",
             "Success",
             JOptionPane.INFORMATION_MESSAGE
           )
-        }
-        catch (e: UncheckedIOException) {
-          if (e.cause is AccessDeniedException) {
-            processingError("Access Denied while attempting to read file [${e.message}]")
-          }
-        }
-        catch (e: Exception) {
-          processingError("An unexpected exception occurred: [${e.message})")
+        } else {
+          processingError(error)
         }
       }
     }

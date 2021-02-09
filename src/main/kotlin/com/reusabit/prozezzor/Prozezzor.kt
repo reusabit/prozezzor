@@ -22,9 +22,13 @@ fun <AllT, EachT, ValueT> OptionWithValues<AllT, EachT, ValueT>.chainIf(
 
 class Prozezzor(
   val inputDirDefault: String? = null,
-  val outputFileNameDefault: String = "prozezzor-output.xlsx",
+  val outputFileNameDefault: String = OUTPUT_FILE_NAME_DEFAULT,
   val outputDirDefault: String? = null,
 ) : CliktCommand() {
+  companion object {
+    @JvmStatic
+    val OUTPUT_FILE_NAME_DEFAULT = "prozezzor-output.xlsx"
+  }
   val gui by option("-g", "--gui", help = "Display a GUI. Mutually exclusive of --interactive.").flag()
 
   val interactive by option(
@@ -55,6 +59,16 @@ class Prozezzor(
   )
   .chainIf(outputDirDefault != null) { this.default(outputDirDefault!!) }
 
+  val yes by option(
+    "-y",
+    "--yes",
+    help = "Yes. Accept the default values for any unspecified option. Required flag for non-interactive mode."
+  )
+  .flag(default = false)
+
+
+  val programOptions: ProgramOptions.Builder by lazy {toProgramOptions()}
+
 
   /**
    * Performs additional validation (e.g. mutual exclusions), throws errors to cause display
@@ -62,12 +76,14 @@ class Prozezzor(
    *
    * This only works if parse has been called.
    */
-  fun toCommandLineOptions(): ProgramOptions.Builder {
+  fun toProgramOptions(): ProgramOptions.Builder {
     val mode = when {
       gui -> AppMode.GUI
       interactive -> AppMode.INTERACTIVE
       else -> AppMode.NON_INTERACTIVE
     }
+
+    if (mode == AppMode.NON_INTERACTIVE && !yes) throw UsageError("Running in --non-interactive mode and the --yes flag was not specified.")
 
     val outputFile = File(outputFileName)
     val outputDirectoryFile = outputDirectory?.let { File(it) }
@@ -87,6 +103,7 @@ class Prozezzor(
       }
     }
 
+
     //println("inputDir = [$inputDir]")
     if (mode == AppMode.NON_INTERACTIVE) {
       if (inputDir == null) {
@@ -97,7 +114,9 @@ class Prozezzor(
     return ProgramOptions.Builder(mode = mode, inputDir = File(inputDir), outputFile = outputFile0)
   }
 
-  override fun run() {}
+  override fun run() {
+    programOptions // So UssageError exceptions are caught by clikt
+  }
 }
 
 fun main(argv: Array<String>) {
@@ -109,7 +128,7 @@ fun main(argv: Array<String>) {
   //  println("arg[$i]=$arg")
   //}
   prozezzor.main(argv)
-  val programOptions = prozezzor.toCommandLineOptions()
+  val programOptions = prozezzor.programOptions
 
   if (programOptions.mode == AppMode.GUI) {
     doGui(programOptions)
@@ -125,9 +144,10 @@ fun main(argv: Array<String>) {
 
   //println("options: $programOptions0")
 
-  doProcessing(programOptions0.build())
+  val programOptionsBuilt = programOptions0.build()
+  val error = doProcessingCatchExceptions(programOptionsBuilt)
+  if (error == null) println ("Success: Data written to file [${programOptionsBuilt.outputFile}]")
 }
-
 
 
 fun doInteractivePrompts(programOptions: ProgramOptions.Builder): ProgramOptions.Builder {
