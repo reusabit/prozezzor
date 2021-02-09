@@ -191,7 +191,8 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     help.addActionListener { e ->
       if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
         Desktop.getDesktop().browse(URI(HELP_URL));
-      } else {
+      }
+      else {
         JOptionPane.showMessageDialog(this, "Unable to open web browser", "Error", JOptionPane.ERROR_MESSAGE)
       }
     }
@@ -203,7 +204,8 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         val text = getNoticeText()
         tempFile.writeText(text, Charsets.UTF_8)
         Desktop.getDesktop().edit(tempFile)
-      } else {
+      }
+      else {
         JOptionPane.showMessageDialog(this, "Unable to open text editor", "Error", JOptionPane.ERROR_MESSAGE)
       }
     }
@@ -342,12 +344,22 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         fileFilter = filter
       }
 
-      val result = chooser.showSaveDialog(this)
-      if (result == JFileChooser.APPROVE_OPTION) {
-        outputFileField.text = chooser.selectedFile.path
-
-        //JFileChooser doesn't append the extension if it is not entered:
-        if (!outputFileField.text.endsWith(".xlsx")) outputFileField.text = outputFileField.text + ".xlsx"
+      while (true) {
+        val result = chooser.showSaveDialog(this)
+        if (result == JFileChooser.APPROVE_OPTION) {
+          //JFileChooser doesn't append the extension if it is not entered:
+          if (!outputFileField.text.endsWith(".xlsx")) outputFileField.text = outputFileField.text + ".xlsx"
+          val response = promptForOverwrite(
+            this,
+            programOptions.outputFile!!,
+            msgFileName="output file"
+          )
+          if (response.toProceed()){
+            outputFileField.text = chooser.selectedFile.path
+            programOptions.overwriteOutputFile = response.toOverwrite()
+          }
+          if (!response.toRepeatFileSelection()) break
+        }
       }
     }
 
@@ -359,6 +371,15 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     runButton.addActionListener { e ->
       programOptions.inputDir = File(inputDirField.text)
       programOptions.outputFile = File(outputFileField.text)
+      val promptResult = promptForOverwrite(
+        parent = this,
+        file = programOptions.outputFile!!,
+        overwrite = programOptions.overwriteOutputFile!!,
+        msgFileName = "output file",
+        includeCancelOption = false,
+      )
+      if (!promptResult.toProceed()) return@addActionListener
+      programOptions.overwriteOutputFile = promptResult.toOverwrite()
       val errors = programOptions.validate()
       if (!errors.isEmpty()) {
         JOptionPane.showMessageDialog(
@@ -367,7 +388,8 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
           "Errors",
           JOptionPane.ERROR_MESSAGE
         )
-      } else {
+      }
+      else {
         val programOptions0 = programOptions.build()
         val error = doProcessingCatchExceptions(programOptions0)
         if (error == null) {
@@ -377,7 +399,8 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
             "Success",
             JOptionPane.INFORMATION_MESSAGE
           )
-        } else {
+        }
+        else {
           processingError(error)
         }
       }
@@ -404,5 +427,7 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
       JOptionPane.ERROR_MESSAGE
     )
   }
+
+
 }
 

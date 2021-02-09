@@ -33,7 +33,7 @@ data class ProgramOptions(
     var mode: AppMode? = null,
     var inputDir: File? = null,
     var outputFile: File? = null,
-    val overwriteOutputFile: Boolean? = null,
+    var overwriteOutputFile: Boolean? = null,
   ) {
     val modeBuild get() = mode ?: throw RuntimeException("mode is null")
     val inputDirBuild get() = inputDir ?: throw RuntimeException("inputDir is null")

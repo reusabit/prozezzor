@@ -34,7 +34,7 @@ class Prozezzor(
   val interactive by option(
     "-i",
     "--interactive",
-    help = "CLI mode, prompt for missing values. Mutually exclusive of --gui."
+    help = "(NOT YET IMPLEMENTED) CLI mode, prompt for missing values. Mutually exclusive of --gui."
   )
   .flag("-I", "--non-interactive", default = false)
 
