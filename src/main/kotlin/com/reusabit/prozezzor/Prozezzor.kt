@@ -66,6 +66,12 @@ class Prozezzor(
   )
   .flag(default = false)
 
+  val force by option (
+    "-f",
+    "--force",
+    help = "Overwrite the output file if it already exists. (Doesn't have an effect if the output file exists and is a directory.)"
+  )
+  .flag(default = false)
 
   val programOptions: ProgramOptions.Builder by lazy {toProgramOptions()}
 
@@ -111,7 +117,7 @@ class Prozezzor(
       }
     }
 
-    return ProgramOptions.Builder(mode = mode, inputDir = File(inputDir), outputFile = outputFile0)
+    return ProgramOptions.Builder(mode = mode, inputDir = File(inputDir), outputFile = outputFile0, overwriteOutputFile = force)
   }
 
   override fun run() {

@@ -105,4 +105,22 @@ class TestProgramOptionsMode {
     .isInstanceOf(UsageError::class.java)
     .hasMessageContaining("--yes")
   }
+
+  @Test
+  fun noninteractiveForce() {
+    val args = arrayOf("-y", "-f")
+    val options = harness(args)
+    assertThat(options.overwriteOutputFile).isTrue()
+  }
+
+  @Test
+  fun noninteractiveForceNoYes() {
+    val args = arrayOf("-f")
+    assertThatThrownBy {
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--yes")
+  }
+
 }
