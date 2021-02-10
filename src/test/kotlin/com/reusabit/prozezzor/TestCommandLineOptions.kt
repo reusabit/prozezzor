@@ -40,6 +40,32 @@ class TestProgramOptionsMode {
   }
 
   @Test
+  fun guiModeRelativeInputDir() {
+    val args = arrayOf<String>("--gui", "--input-directory", "relativedir")
+    assertThatThrownBy{
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--gui")
+    .hasMessageContaining("absolute")
+    .hasMessageContaining("--input-directory")
+    .hasMessageContaining("relativedir")
+  }
+
+  @Test
+  fun guiModeRelativeOutputDirectory() {
+    val args = arrayOf<String>("--gui", "--output-directory", "relativefile.xlsx")
+    assertThatThrownBy{
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--gui")
+    .hasMessageContaining("absolute")
+    .hasMessageContaining("--output-file")
+    .hasMessageContaining("relativefile.xlsx")
+  }
+
+  @Test
   fun noArgs() {
     val args = arrayOf<String>()
     assertThatThrownBy{

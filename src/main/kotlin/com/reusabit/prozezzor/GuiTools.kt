@@ -54,7 +54,7 @@ fun promptForOverwrite(
   msgFileName: String = "file",
   includeCancelOption: Boolean = true
 ): PromptForOverwriteResponse {
-  if (fileType == PromptForOverwriteFileType.FILE && !file.isFile) {
+  if (fileType == PromptForOverwriteFileType.FILE && file.exists() && !file.isFile) {
     JOptionPane.showMessageDialog(
       parent,
       "The $msgFileName [${file}] is not a regular file. Please select a different file.",
