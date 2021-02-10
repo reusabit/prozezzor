@@ -84,7 +84,7 @@ Example:
 ```
 $ ./prozezzor -y -f \
 --input-directory /cygdrive/c/Users/Rob/Documents/Zoom/ \
---output-file-name /cygdrive/c/Users/Rob/Documents/prozezzor.xlsx
+--output-file /cygdrive/c/Users/Rob/Documents/prozezzor.xlsx
 ```
 
 ## Contact
