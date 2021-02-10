@@ -89,7 +89,7 @@ $ ./prozezzor -y -f \
 
 ## Contact
 
-Prozezzor is written by Reusabit Software LLC.
+Prozezzor is written by Reusabit Software LLC ([https://reusabit.com](https://reusabit.com)).
 
 Contact: Rob Pulsipher - rob@reusabit
 
