@@ -24,7 +24,7 @@ import javax.swing.JTextField
 import javax.swing.filechooser.FileNameExtensionFilter
 
 
-private val HELP_URL = "https://reusabit.com/prozezzor/help"
+private val HELP_URL = "https://reusabit.com/prozezzor-help"
 
 /**
  * The gui displays a dialog box that is initially populated with the values calculated previously,
