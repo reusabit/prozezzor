@@ -27,11 +27,13 @@ data class ProgramOptions(
   val mode: AppMode,
   val inputDir: File,
   val outputFile: File,
+  val overwriteOutputFile: Boolean
 ) {
   data class Builder(
-    var mode: AppMode?,
-    var inputDir: File?,
-    var outputFile: File?
+    var mode: AppMode? = null,
+    var inputDir: File? = null,
+    var outputFile: File? = null,
+    var overwriteOutputFile: Boolean? = null,
   ) {
     val modeBuild get() = mode ?: throw RuntimeException("mode is null")
     val inputDirBuild get() = inputDir ?: throw RuntimeException("inputDir is null")
@@ -42,17 +44,20 @@ data class ProgramOptions(
     val outputFileValidated get() = outputFileBuild.also{
       if (it.parentFile?.isDirectory != true) throw RuntimeException("Unable to write to the output file [${it}]")
     }
+    val overwriteOutputFileBuild get() = overwriteOutputFile ?: throw RuntimeException("overwriteOutputFile is null")
 
     fun validate() = LinkedList<String>().also {
       check (it){modeBuild}
       check (it){inputDirValidated}
       check (it){outputFileValidated}
+      check (it){overwriteOutputFileBuild}
     }
 
     fun build() = ProgramOptions(
       mode = modeBuild,
       inputDir = inputDirBuild,
-      outputFile = outputFileBuild
+      outputFile = outputFileBuild,
+      overwriteOutputFile = overwriteOutputFileBuild,
     )
   }
 }

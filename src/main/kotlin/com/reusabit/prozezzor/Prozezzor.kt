@@ -6,7 +6,6 @@ package com.reusabit.prozezzor
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.parameters.options.OptionWithValues
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import java.io.File
@@ -22,38 +21,56 @@ fun <AllT, EachT, ValueT> OptionWithValues<AllT, EachT, ValueT>.chainIf(
 
 class Prozezzor(
   val inputDirDefault: String? = null,
-  val outputFileNameDefault: String = "prozezzor-output.xlsx",
+  val outputFileDefault: String = OUTPUT_FILE_NAME_DEFAULT,
   val outputDirDefault: String? = null,
 ) : CliktCommand() {
+  companion object {
+    @JvmStatic
+    val OUTPUT_FILE_NAME_DEFAULT = "prozezzor-output.xlsx"
+  }
+
   val gui by option("-g", "--gui", help = "Display a GUI. Mutually exclusive of --interactive.").flag()
 
   val interactive by option(
     "-i",
     "--interactive",
-    help = "CLI mode, prompt for missing values. Mutually exclusive of --gui."
+    help = "(NOT YET IMPLEMENTED) CLI mode, prompt for missing values. Mutually exclusive of --gui."
   )
   .flag("-I", "--non-interactive", default = false)
 
-  val inputDir by option(
+  val inputDirString by option(
     "-d",
     "--input-directory",
-    help = "Location of the directory to process (e.g., the zoom chat archive directory)."
+    help = "Location of the directory to process (e.g., the zoom chat archive directory). Must be an absolute path when running in --gui mode."
   )
-  .chainIf(inputDirDefault != null) { this.default(inputDirDefault!!) }
 
-  val outputFileName by option(
+  val outputFileString by option(
     "-o",
-    "--output-file-name",
+    "--output-file",
     help = "Output file name."
   )
-  .default(outputFileNameDefault)
 
-  val outputDirectory by option(
+  val outputDir by option(
     "-O",
     "--output-directory",
     help = "Output directory. May only be specified when --output-file-name is a relative path. Must be an absolute path when running in --gui mode."
   )
-  .chainIf(outputDirDefault != null) { this.default(outputDirDefault!!) }
+
+  val yes by option(
+    "-y",
+    "--yes",
+    help = "Yes. Accept the default values for any unspecified option. Required flag for --non-interactive with unspecified options."
+  )
+  .flag(default = false)
+
+  val force by option(
+    "-f",
+    "--force",
+    help = "Overwrite the output file if it already exists. (Doesn't have an effect if the output file exists and is a directory.)"
+  )
+  .flag(default = false)
+
+  val programOptions: ProgramOptions.Builder by lazy { toProgramOptions() }
 
 
   /**
@@ -62,42 +79,65 @@ class Prozezzor(
    *
    * This only works if parse has been called.
    */
-  fun toCommandLineOptions(): ProgramOptions.Builder {
+  fun toProgramOptions(): ProgramOptions.Builder {
     val mode = when {
       gui -> AppMode.GUI
       interactive -> AppMode.INTERACTIVE
       else -> AppMode.NON_INTERACTIVE
     }
 
-    val outputFile = File(outputFileName)
-    val outputDirectoryFile = outputDirectory?.let { File(it) }
+    if (mode == AppMode.INTERACTIVE && yes) throw UsageError("Running in --interactive mode. The --yes flag is not applicable.")
+
+    if (
+      mode == AppMode.NON_INTERACTIVE
+      && !yes
+      && (inputDirString == null || outputDir == null && outputFileString == null)
+    ) {
+      throw UsageError("Running in --non-interactive, defaults required, and the --yes flag was not specified.")
+    }
+
+    val outputDir0 = outputDir ?: outputDirDefault
+    val outputDirFile = outputDir0?.let { File(it) }
+    val outputFile = File(outputFileString?:outputFileDefault)
 
     val outputFile0 = when {
       outputFile.isAbsolute -> outputFile
       else -> when {
         mode != AppMode.GUI -> outputFile.absoluteFile
         else -> when {
-          outputDirectoryFile == null -> throw UsageError("The program is in --gui mode, --output-directory is not provided, and unable to determine a viable default.")
+          outputDirFile == null -> throw UsageError("The program is in --gui mode, --output-directory is not provided, and unable to determine a viable default.")
           else -> when {
-            !outputDirectoryFile.isAbsolute -> throw UsageError("The program is in --gui mode and --output-directory [$outputDirectoryFile] is not an absolute path.")
-            !outputDirectoryFile.isDirectory -> throw UsageError("The --output-directory [$outputDirectoryFile] is not a directory.")
-            else -> outputDirectoryFile.resolve(outputFile)
+            !outputDirFile.isAbsolute -> throw UsageError("The program is in --gui mode and --output-directory [$outputDirFile] is not an absolute path.")
+            !outputDirFile.isDirectory -> throw UsageError("The --output-directory [$outputDirFile] is not a directory.")
+            else -> outputDirFile.resolve(outputFile)
           }
         }
       }
     }
 
+    val inputDirString0 = inputDirString ?: inputDirDefault
+    val inputDir0 = inputDirString0?.let{File(it)}
+
+    if (inputDir0?.isAbsolute == false) throw UsageError("The progam is in --gui mode: --input-directory [$inputDir0] be an absolute path")
+
     //println("inputDir = [$inputDir]")
     if (mode == AppMode.NON_INTERACTIVE) {
-      if (inputDir == null) {
+      if (inputDirString0 == null) {
         throw UsageError("--input-directory is required if in non-interactive mode and a default cannot be determined")
       }
     }
 
-    return ProgramOptions.Builder(mode = mode, inputDir = File(inputDir), outputFile = outputFile0)
+    return ProgramOptions.Builder(
+      mode = mode,
+      inputDir = inputDirString0?.let{File(it)},
+      outputFile = outputFile0,
+      overwriteOutputFile = force
+    )
   }
 
-  override fun run() {}
+  override fun run() {
+    programOptions // So UssageError exceptions are caught by clikt
+  }
 }
 
 fun main(argv: Array<String>) {
@@ -109,7 +149,7 @@ fun main(argv: Array<String>) {
   //  println("arg[$i]=$arg")
   //}
   prozezzor.main(argv)
-  val programOptions = prozezzor.toCommandLineOptions()
+  val programOptions = prozezzor.programOptions
 
   if (programOptions.mode == AppMode.GUI) {
     doGui(programOptions)
@@ -125,9 +165,11 @@ fun main(argv: Array<String>) {
 
   //println("options: $programOptions0")
 
-  doProcessing(programOptions0.build())
+  val programOptionsBuilt = programOptions0.build()
+  val error = doProcessingCatchExceptions(programOptionsBuilt)
+  if (error == null) println("Success: Data written to file [${programOptionsBuilt.outputFile}]")
+  else println("Error: $error")
 }
-
 
 
 fun doInteractivePrompts(programOptions: ProgramOptions.Builder): ProgramOptions.Builder {

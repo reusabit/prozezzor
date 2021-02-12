@@ -1,6 +1,7 @@
 package com.reusabit.prozezzor
 
 import java.awt.BorderLayout
+import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -9,18 +10,21 @@ import java.awt.Toolkit
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
-import java.io.UncheckedIOException
-import java.nio.file.AccessDeniedException
+import java.net.URI
 import javax.swing.JButton
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JLabel
+import javax.swing.JMenu
+import javax.swing.JMenuBar
+import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JTextField
-import javax.swing.border.EmptyBorder
-import javax.swing.border.EtchedBorder
 import javax.swing.filechooser.FileNameExtensionFilter
+
+
+private val HELP_URL = "https://reusabit.com/prozezzor-help"
 
 /**
  * The gui displays a dialog box that is initially populated with the values calculated previously,
@@ -67,6 +71,64 @@ fun makeConstraints(
   ipady
 )
 
+fun getNoticeText(): String {
+  val cl = Thread.currentThread().contextClassLoader
+  val stream = cl.getResourceAsStream("NOTICE.txt")
+  val reader = stream?.reader(Charsets.UTF_8)
+  val noticeText = reader?.readText() ?: ""
+  return noticeText
+}
+
+//class NoticesDialog(owner: JFrame) : JDialog(owner, "Third Party License Notices", true) {
+//  init {
+//    layout = GridBagLayout()
+//
+//    contentPane.apply {
+//      add(JLabel("Third Party License Notices:"), makeConstraints(0, 0, insets = makeInsets(20)))
+//
+//      val cl = Thread.currentThread().contextClassLoader
+//      val stream = cl.getResourceAsStream("NOTICE.txt")
+//      val reader = stream?.reader(Charsets.UTF_8)
+//      val noticeText = reader?.readText() ?: ""
+//
+//      add(
+//        JScrollPane((JTextPane().apply {
+//          isEditable = false
+//          text = "Something shorter\nanotherline\n".repeat(1000000)
+//        })),
+//        makeConstraints(0, 1, insets = makeInsets(20))
+//      )
+//
+//
+//      add(
+//        JButton("Close").apply {
+//          addActionListener { e ->
+//            this@NoticesDialog.isVisible = false
+//            this@NoticesDialog.dispose()
+//          }
+//
+//          this@NoticesDialog.defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
+//          this@NoticesDialog.rootPane.defaultButton = this
+//        },
+//        makeConstraints(0, 2, insets = makeInsets(20))
+//      )
+//    }
+//
+//    val desktopSize = Toolkit.getDefaultToolkit().screenSize
+//    val MAX_WIDTH = 600
+//    val MAX_HEIGHT = 1000
+//    val width = minOf(desktopSize.width, MAX_WIDTH)
+//    val height = minOf(desktopSize.height, MAX_HEIGHT)
+//    val x = maxOf(0, desktopSize.width / 2 - width / 2)
+//    val y = maxOf(0, desktopSize.height / 2 - height / 2)
+//    setBounds(x, y, width, height)
+//
+//    defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
+//    isModal = true
+//  }
+//}
+
+
 class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
   val inputDirLabel = JLabel().apply {
     text = "Input Directory:"
@@ -104,6 +166,15 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     text = "Exit"
   }
 
+  val help = JMenuItem("Instructions")
+  val notices = JMenuItem("Third Party License Notices")
+  val menuBar = JMenuBar().apply {
+    add(JMenu("Help").apply {
+      add(help)
+      add(notices)
+    })
+  }
+
   init {
     val desktopSize = Toolkit.getDefaultToolkit().screenSize
     val MAX_WIDTH = 700
@@ -114,7 +185,31 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     val y = maxOf(0, desktopSize.height / 2 - height / 2)
     setBounds(x, y, width, height)
     defaultCloseOperation = DISPOSE_ON_CLOSE
-    isVisible = true
+
+    jMenuBar = menuBar
+
+    help.addActionListener { e ->
+      if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+        Desktop.getDesktop().browse(URI(HELP_URL));
+      }
+      else {
+        JOptionPane.showMessageDialog(this, "Unable to open web browser", "Error", JOptionPane.ERROR_MESSAGE)
+      }
+    }
+
+    notices.addActionListener { e ->
+
+      if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+        val tempFile = File.createTempFile("prozezzor-third-party-notice-", ".txt")
+        val text = getNoticeText()
+        tempFile.writeText(text, Charsets.UTF_8)
+        Desktop.getDesktop().edit(tempFile)
+      }
+      else {
+        JOptionPane.showMessageDialog(this, "Unable to open text editor", "Error", JOptionPane.ERROR_MESSAGE)
+      }
+    }
+
 
     val mainPanel = JPanel().apply {
       contentPane.add(this, BorderLayout.CENTER)
@@ -249,12 +344,22 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         fileFilter = filter
       }
 
-      val result = chooser.showSaveDialog(this)
-      if (result == JFileChooser.APPROVE_OPTION) {
-        outputFileField.text = chooser.selectedFile.path
-
-        //JFileChooser doesn't append the extension if it is not entered:
-        if (!outputFileField.text.endsWith(".xlsx")) outputFileField.text = outputFileField.text + ".xlsx"
+      while (true) {
+        val result = chooser.showSaveDialog(this)
+        if (result == JFileChooser.APPROVE_OPTION) {
+          //JFileChooser doesn't append the extension if it is not entered:
+          if (!outputFileField.text.endsWith(".xlsx")) outputFileField.text = outputFileField.text + ".xlsx"
+          val response = promptForOverwrite(
+            this,
+            programOptions.outputFile!!,
+            msgFileName="output file"
+          )
+          if (response.toProceed()){
+            outputFileField.text = chooser.selectedFile.path
+            programOptions.overwriteOutputFile = response.toOverwrite()
+          }
+          if (!response.toRepeatFileSelection()) break
+        }
       }
     }
 
@@ -266,6 +371,15 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     runButton.addActionListener { e ->
       programOptions.inputDir = File(inputDirField.text)
       programOptions.outputFile = File(outputFileField.text)
+      val promptResult = promptForOverwrite(
+        parent = this,
+        file = programOptions.outputFile!!,
+        overwrite = programOptions.overwriteOutputFile!!,
+        msgFileName = "output file",
+        includeCancelOption = false,
+      )
+      if (!promptResult.toProceed()) return@addActionListener
+      programOptions.overwriteOutputFile = promptResult.toOverwrite()
       val errors = programOptions.validate()
       if (!errors.isEmpty()) {
         JOptionPane.showMessageDialog(
@@ -274,10 +388,11 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
           "Errors",
           JOptionPane.ERROR_MESSAGE
         )
-      } else {
+      }
+      else {
         val programOptions0 = programOptions.build()
-        try {
-          doProcessing(programOptions0)
+        val error = doProcessingCatchExceptions(programOptions0)
+        if (error == null) {
           JOptionPane.showMessageDialog(
             this,
             "The spreadsheet was created successfully. Saved to ${programOptions.outputFile}",
@@ -285,13 +400,8 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
             JOptionPane.INFORMATION_MESSAGE
           )
         }
-        catch (e: UncheckedIOException) {
-          if (e.cause is AccessDeniedException) {
-            processingError("Access Denied while attempting to read file [${e.message}]")
-          }
-        }
-        catch (e: Exception) {
-          processingError("An unexpected exception occurred: [${e.message})")
+        else {
+          processingError(error)
         }
       }
     }
@@ -302,6 +412,8 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         System.exit(0)
       }
     })
+
+    isVisible = true //Needs to be last.
   }
 
   /**
@@ -315,5 +427,7 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
       JOptionPane.ERROR_MESSAGE
     )
   }
+
+
 }
 

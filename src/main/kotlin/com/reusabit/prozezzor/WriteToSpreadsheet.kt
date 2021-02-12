@@ -5,6 +5,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.file.FileAlreadyExistsException
 
 fun Row.createCell(i: Int, value: String){
   val cell = this.createCell(i)
@@ -41,7 +42,10 @@ fun buildSpreadsheet(records: List<Record>): XSSFWorkbook {
   return workbook
 }
 
-fun writeSpreadsheet(workbook: XSSFWorkbook, file: File) {
+fun writeSpreadsheet(workbook: XSSFWorkbook, file: File, overwrite: Boolean = false) {
+  if (file.isDirectory) throw FileAlreadyExistsException("The file [${file}] is a directory.")
+  if (file.exists() && !overwrite)
+    throw FileAlreadyExistsException("The file [${file}] already exists and overwrite is not enabled.")
   FileOutputStream(file).use{
     workbook.write(it)
   }

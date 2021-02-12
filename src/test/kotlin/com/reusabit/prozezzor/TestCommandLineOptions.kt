@@ -2,24 +2,11 @@ package com.reusabit.prozezzor
 
 import com.github.ajalt.clikt.core.NoSuchOption
 import com.github.ajalt.clikt.core.PrintHelpMessage
+import com.github.ajalt.clikt.core.UsageError
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
-import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.name
-
-private fun harness(argv: Array<String>): ProgramOptions {
-
-  val prozezzor = Prozezzor(
-    inputDirDefault = Files.createTempDirectory("prozezzor-test-idd").toFile().path,
-    outputDirDefault = Files.createTempDirectory("prozezzor-test-odd").toFile().path,
-  )
-  prozezzor.parse(argv)
-  return prozezzor.toCommandLineOptions()
-}
 
 /**
  * If the --gui (-g) flag is set, then the appliations runs a gui.
@@ -53,10 +40,39 @@ class TestProgramOptionsMode {
   }
 
   @Test
+  fun guiModeRelativeInputDir() {
+    val args = arrayOf<String>("--gui", "--input-directory", "relativedir")
+    assertThatThrownBy{
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--gui")
+    .hasMessageContaining("absolute")
+    .hasMessageContaining("--input-directory")
+    .hasMessageContaining("relativedir")
+  }
+
+  @Test
+  fun guiModeRelativeOutputDirectory() {
+    val args = arrayOf<String>("--gui", "--output-directory", "relativefile.xlsx")
+    assertThatThrownBy{
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--gui")
+    .hasMessageContaining("absolute")
+    .hasMessageContaining("--output-file")
+    .hasMessageContaining("relativefile.xlsx")
+  }
+
+  @Test
   fun noArgs() {
     val args = arrayOf<String>()
-    val options = harness(args)
-    assertThat(options.mode).isEqualTo(AppMode.NON_INTERACTIVE)
+    assertThatThrownBy{
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--yes")
   }
 
 
@@ -76,14 +92,14 @@ class TestProgramOptionsMode {
 
   @Test
   fun noninteractiveModeShortForm() {
-    val args = arrayOf("-I")
+    val args = arrayOf("-I", "-y")
     val options = harness(args)
     assertThat(options.mode).isEqualTo(AppMode.NON_INTERACTIVE)
   }
 
   @Test
   fun noninteractiveModeLongForm() {
-    val args = arrayOf("--non-interactive")
+    val args = arrayOf("--non-interactive", "--yes")
     val options = harness(args)
     assertThat(options.mode).isEqualTo(AppMode.NON_INTERACTIVE)
   }
@@ -104,6 +120,33 @@ class TestProgramOptionsMode {
       val options = harness(args)
     }
       .isInstanceOf(PrintHelpMessage::class.java)
+  }
+
+  @Test
+  fun noninteractiveNoYes() {
+    val args = arrayOf("-I")
+    assertThatThrownBy {
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--yes")
+  }
+
+  @Test
+  fun noninteractiveForce() {
+    val args = arrayOf("-y", "-f")
+    val options = harness(args)
+    assertThat(options.overwriteOutputFile).isTrue()
+  }
+
+  @Test
+  fun noninteractiveForceNoYes() {
+    val args = arrayOf("-f")
+    assertThatThrownBy {
+      val options = harness(args)
+    }
+    .isInstanceOf(UsageError::class.java)
+    .hasMessageContaining("--yes")
   }
 
 }
