@@ -64,4 +64,5 @@ install4j {
 
 tasks.create("buildInstaller", com.install4j.gradle.Install4jTask::class.java) {
   projectFile=file("install.install4j")
+  dependsOn(":installDist")
 }

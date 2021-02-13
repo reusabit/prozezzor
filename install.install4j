@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="8.0.10" transformSequenceNumber="8">
-  <directoryPresets config="./build/installers" />
+  <directoryPresets config="./src/main/resources" />
   <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="11">
     <searchSequence>
       <registry />
@@ -18,13 +18,19 @@
   </files>
   <launchers>
     <launcher name="prozezzor-gui" id="62">
-      <executable name="prozezzor-gui" executableMode="gui" checkConsoleParameter="true" />
+      <executable name="Prozezzor" iconSet="true" executableMode="gui" checkConsoleParameter="true" />
       <java mainClass="com.reusabit.prozezzor.ProzezzorKt" arguments="--gui" allowVMPassthroughParameters="false">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
       </java>
       <vmOptionsFile mode="none" />
+      <iconImageFiles>
+        <file path="./src/main/resources/icon16x16.png" />
+        <file path="./src/main/resources/icon32x32.png" />
+        <file path="./src/main/resources/icon48x48.png" />
+        <file path="./src/main/resources/icon128x128.png" />
+      </iconImageFiles>
     </launcher>
   </launchers>
   <installerGui>
