@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="8.0.10" transformSequenceNumber="8">
-  <directoryPresets config="./src/main/resources" />
-  <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="11">
+<install4j version="8.0.11" transformSequenceNumber="8">
+  <directoryPresets config="../certs/DevIdApp.p12" />
+  <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="15">
     <searchSequence>
       <registry />
     </searchSequence>
-    <codeSigning windowsKeySource="pkcs11" />
-    <jreBundles jdkProviderId="AdoptOpenJDK" release="openjdk11/jdk-11.0.10+9" />
+    <codeSigning macEnabled="true" macPkcs12File="../certs/DevIdApp.p12" windowsKeySource="pkcs11" />
+    <jreBundles jdkProviderId="JBR" release="11.0.10-b1341.2" />
   </application>
   <files>
     <mountPoints>
@@ -14,6 +14,7 @@
     </mountPoints>
     <entries>
       <dirEntry mountPoint="58" file="./build/install/prozezzor" subDirectory="prozezzor" />
+      <fileEntry mountPoint="58" file="./NOTICE.txt" />
     </entries>
   </files>
   <launchers>

@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
   id("org.jetbrains.kotlin.jvm") version "1.4.21"
   //id("org.openjfx.javafxplugin") version "0.0.9"
@@ -48,6 +50,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   }
 }
 
+
+val isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
+val isMac = Os.isFamily(Os.FAMILY_MAC)
+
+
 application {
   // Define the main class for the application.
   mainClass.set("com.reusabit.prozezzor.ProzezzorKt")
@@ -59,10 +66,16 @@ licenseReport {
 }
 
 install4j {
-  installDir = file("""C:\Program Files\install4j8""")
+  if (isWindows)
+    installDir = file("""C:\Program Files\install4j8""")
+  else if (isMac)
+    installDir = file("""/Applications/install4j.app""")
 }
 
+// This doesn't work anymore because a password is required for the code signing cert. Easiest way is to just
+// run the installer gui.
 tasks.create("buildInstaller", com.install4j.gradle.Install4jTask::class.java) {
-  projectFile=file("install.install4j")
+  projectFile = file("install.install4j")
   dependsOn(":installDist")
 }
+
