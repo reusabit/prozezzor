@@ -18,7 +18,6 @@ limitations under the License.
 package com.reusabit.prozezzor
 
 import org.apache.poi.ss.usermodel.Row
-import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
@@ -37,9 +36,22 @@ private val WEBSITE_COL = 4
 
 private val HEADER_ROW = 0
 
+
+private val NAME_WIDTH = 25
+private val EMAIL_WIDTH = 30
+private val PHONE_WIDTH = 18
+private val LINKEDIN_WIDTH = 50
+private val WEBSITE_WIDTH = 50
+
 fun buildSpreadsheet(records: List<Record>): XSSFWorkbook {
   val workbook = XSSFWorkbook()
   val sheet = workbook.createSheet("Contacts")
+
+  sheet.setColumnWidth(NAME_COL, NAME_WIDTH * 256)
+  sheet.setColumnWidth(EMAIL_COL, EMAIL_WIDTH * 256)
+  sheet.setColumnWidth(PHONE_COL, PHONE_WIDTH * 256)
+  sheet.setColumnWidth(LINKEDIN_COL, LINKEDIN_WIDTH * 256)
+  sheet.setColumnWidth(WEBSITE_COL, WEBSITE_WIDTH * 256)
 
   val headerRow = sheet.createRow(0)
   headerRow.createCell(NAME_COL, "Name")
