@@ -27,7 +27,7 @@ private val SECOND_PATTERN = """(60|[0-5][0-9])""" //Supports leap seconds.
 private val TIME_PATTERN = """$HOUR24_PATTERN:$MINUTE_PATTERN:$SECOND_PATTERN"""
 private val HEADER_PATTERN = """$TIME_PATTERN\t From  (.*?) : (.*)"""
 private val HEADER_PATTERN_DIRECT_MESSAGE = """$TIME_PATTERN\t From  (.*?)  to  (.*?)\(Direct message\) : (.*)"""
-private val PHONE_PATTERN = """\b\(?[ \t]*[0-9]{3}[ \t]*[-(.]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
+private val PHONE_PATTERN = """[(]?\b[0-9]{3}[ \t]*[-).]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
 
 private val DOMAIN_SERVER_PATTERN = """[-a-zA-Z0-9]+"""
 private val DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})+\.?"""

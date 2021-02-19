@@ -70,15 +70,15 @@ class TestProgramOptionsMode {
 
   @Test
   fun guiModeRelativeOutputDirectory() {
-    val args = arrayOf<String>("--gui", "--output-directory", "relativefile.xlsx")
+    val args = arrayOf<String>("--gui", "--output-directory", "relativedirectory")
     assertThatThrownBy{
       val options = harness(args)
     }
     .isInstanceOf(UsageError::class.java)
     .hasMessageContaining("--gui")
     .hasMessageContaining("absolute")
-    .hasMessageContaining("--output-file")
-    .hasMessageContaining("relativefile.xlsx")
+    .hasMessageContaining("--output-directory")
+    .hasMessageContaining("relativedirectory")
   }
 
   @Test

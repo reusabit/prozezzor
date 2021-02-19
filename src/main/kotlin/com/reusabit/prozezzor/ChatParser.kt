@@ -47,7 +47,7 @@ fun extractMessages(input: BufferedReader): List<ChatMessage> {
   processMessage(buffer)?.let { results.add(it) }
 
   results.forEach {
-    //println("message: $it")
+    println("message: $it")
   }
   return results
 }
