@@ -17,16 +17,19 @@ limitations under the License.
 
 package com.reusabit.prozezzor
 
+import org.apache.poi.common.usermodel.HyperlinkType
+import org.apache.poi.ss.usermodel.FillPatternType
+import org.apache.poi.ss.usermodel.Hyperlink
+import org.apache.poi.ss.usermodel.IndexedColors
 import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.xssf.usermodel.XSSFFont
+import org.apache.poi.xssf.usermodel.XSSFHyperlink
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.FileAlreadyExistsException
 
-fun Row.createCell(i: Int, value: String){
-  val cell = this.createCell(i)
-  cell.setCellValue(value)
-}
+
 
 private val NAME_COL = 0
 private val EMAIL_COL = 1
@@ -47,6 +50,32 @@ fun buildSpreadsheet(records: List<Record>): XSSFWorkbook {
   val workbook = XSSFWorkbook()
   val sheet = workbook.createSheet("Contacts")
 
+  val hyperlinkStyle = workbook.createCellStyle().apply {
+    //fillForegroundColor = IndexedColors.BLUE.index
+    //fillPattern = FillPatternType.SOLID_FOREGROUND
+    setFont(workbook.createFont().apply {
+      underline = XSSFFont.U_SINGLE
+      color = IndexedColors.LIGHT_BLUE.index
+    })
+  }
+
+  /**
+   * href only supports url hyperlinks currently
+   */
+  fun Row.createCell(i: Int, value: String, href: String? = null) {
+    val cell = this.createCell(i)
+    cell.setCellValue(value)
+    if (href != null) {
+      val href0 = when {
+        href.startsWith("https://") || href.startsWith("http://") -> href
+        else -> "http://${href}"
+      }
+      val hyperlink = this.sheet.workbook.creationHelper.createHyperlink(HyperlinkType.URL).apply { address = href0 }
+      cell.hyperlink = hyperlink
+      cell.cellStyle = hyperlinkStyle
+    }
+  }
+
   sheet.setColumnWidth(NAME_COL, NAME_WIDTH * 256)
   sheet.setColumnWidth(EMAIL_COL, EMAIL_WIDTH * 256)
   sheet.setColumnWidth(PHONE_COL, PHONE_WIDTH * 256)
@@ -59,13 +88,13 @@ fun buildSpreadsheet(records: List<Record>): XSSFWorkbook {
   headerRow.createCell(PHONE_COL, "Phone")
   headerRow.createCell(LINKEDIN_COL, "LinkedIn Profile")
   headerRow.createCell(WEBSITE_COL, "Website")
-  records.forEachIndexed{i, record ->
-    val row = sheet.createRow(i+HEADER_ROW+1)//start on row after header row
-    record.name?.let{row.createCell(NAME_COL, it)}
-    record.primaryEmail?.let{row.createCell(EMAIL_COL, it)}
-    record.primaryPhoneNumber?.let{row.createCell(PHONE_COL,it)}
-    record.linkedin?.let{row.createCell(LINKEDIN_COL, it)}
-    record.website?.let{row.createCell(WEBSITE_COL, it)}
+  records.forEachIndexed { i, record ->
+    val row = sheet.createRow(i + HEADER_ROW + 1) //start on row after header row
+    record.name?.let { row.createCell(NAME_COL, it) }
+    record.primaryEmail?.let { row.createCell(EMAIL_COL, it) }
+    record.primaryPhoneNumber?.let { row.createCell(PHONE_COL, it) }
+    record.linkedin?.let { row.createCell(LINKEDIN_COL, value = it, href = it) }
+    record.website?.let { row.createCell(WEBSITE_COL, value = it, href = it) }
   }
 
   return workbook
@@ -75,7 +104,7 @@ fun writeSpreadsheet(workbook: XSSFWorkbook, file: File, overwrite: Boolean = fa
   if (file.isDirectory) throw FileAlreadyExistsException("The file [${file}] is a directory.")
   if (file.exists() && !overwrite)
     throw FileAlreadyExistsException("The file [${file}] already exists and overwrite is not enabled.")
-  FileOutputStream(file).use{
+  FileOutputStream(file).use {
     workbook.write(it)
   }
 }
