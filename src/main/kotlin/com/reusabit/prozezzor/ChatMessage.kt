@@ -29,7 +29,7 @@ private val HEADER_PATTERN = """$TIME_PATTERN\t From  (.*?) : (.*)"""
 private val HEADER_PATTERN_DIRECT_MESSAGE = """$TIME_PATTERN\t From  (.*?)  to  (.*?)\(Direct message\) : (.*)"""
 private val PHONE_PATTERN = """[(]?\b[0-9]{3}[ \t]*[-).]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
 
-private val DOMAIN_SERVER_PATTERN = """[-a-zA-Z0-9]+"""
+private val DOMAIN_SERVER_PATTERN = """[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9]?)"""
 private val DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})+\.?"""
 private val PROBABLE_DOMAIN_PATTERN =
 """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){2,}\.?""" //Has at least three server names, eg. "www.example.com" rather than "example.com"
@@ -41,16 +41,16 @@ private val PROTOCOL_PATTERN = """(http://|https://)"""
 // This is simplified somewhat in order to pick up "common" urls. Businesses shouldn't be using big, ugly urls for contact information.
 private val SUBDIRECTORY_PATTERN = """((/[-_+%&?a-zA-Z0-9]+)+)"""
 
-private val DEFINITE_URL_PATTERN = """${PROTOCOL_PATTERN}${DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?"""
-private val PROBABLE_URL_PATTERN = """(?<!^|[^@])(${PROBABLE_DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?)"""
-private val PROBABLE_URL_PATTERN2 = """(?<!^|[^@])(${PROBABLE_DOMAIN_PATTERN2}${SUBDIRECTORY_PATTERN}?)"""
-private val PROBABLE_URL_PATTERN3 = """(?<!^|[^@])(${PROBABLE_DOMAIN_PATTERN3}${SUBDIRECTORY_PATTERN}?)"""
+private val DEFINITE_URL_PATTERN = """\b${PROTOCOL_PATTERN}${DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?"""
+private val PROBABLE_URL_PATTERN = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?)"""
+private val PROBABLE_URL_PATTERN2 = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN2}${SUBDIRECTORY_PATTERN}?)"""
+private val PROBABLE_URL_PATTERN3 = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN3}${SUBDIRECTORY_PATTERN}?)"""
 
 
 //The email specification allows for complicated addresses.
 //In my experience, it would be bad business to use something crazy as an email address.
 //So this pattern is simplified in order to properly match "usual" business email addresses.
-private val EMAIL_PATTERN = """[-._a-zA-Z0-9]+@${DOMAIN_PATTERN}"""
+private val EMAIL_PATTERN = """[a-zA-Z0-9][-._a-zA-Z0-9]*[a-zA-Z0-9]?@${DOMAIN_PATTERN}"""
 
 
 private val LINKEDIN_PATTERN = """${PROTOCOL_PATTERN}?(www\.)?linkedin.com/(.*)"""
@@ -225,13 +225,13 @@ data class ChatMessage(
           Url(matcher.group(0))
         },
         Pair(PROBABLE_URL_PATTERN) { matcher ->
-          Url(matcher.group(1))
+          Url(matcher.group(2))
         },
         Pair(PROBABLE_URL_PATTERN2) { matcher ->
-          Url(matcher.group(1))
+          Url(matcher.group(2))
         },
         Pair(PROBABLE_URL_PATTERN3) { matcher ->
-          Url(matcher.group(1))
+          Url(matcher.group(2))
         },
       )
     )
