@@ -29,11 +29,14 @@ private val HEADER_PATTERN = """$TIME_PATTERN\t From  (.*?) : (.*)"""
 private val HEADER_PATTERN_DIRECT_MESSAGE = """$TIME_PATTERN\t From  (.*?)  to  (.*?)\(Direct message\) : (.*)"""
 private val PHONE_PATTERN = """[(]?\b[0-9]{3}[ \t]*[-).]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
 
-private val DOMAIN_SERVER_PATTERN = """[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9]?)"""
+//Note: The shorter alternative (single character) must come last, because regex-directed engines are eager and stop at first match.
+//(A text-based engine, if it is ever substituted, should still work with this approach, because it will match the longest match.)
+private val DOMAIN_SERVER_PATTERN = """([a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9])"""
+//TLD must have a non-digit:
+private val DOMAIN_SERVER_TLD_PATTERN = """([a-zA-Z][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z]|[a-zA-Z])"""
 private val DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})+\.?"""
-private val PROBABLE_DOMAIN_PATTERN =
-"""${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){2,}\.?""" //Has at least three server names, eg. "www.example.com" rather than "example.com"
-private val PROBABLE_DOMAIN_PATTERN2 = """(www\.)${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})+\.?"""
+//Has at least three server names, eg. "www.example.com" rather than "example.com":
+private val PROBABLE_DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){1,}(\.${DOMAIN_SERVER_TLD_PATTERN})\.?"""
 private val PROBABLE_DOMAIN_PATTERN3 =
 """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})*\.(com|net|org|gov|mil|io|info|dev|de|icu|uk|ru|top|xyz|tk|cn|ga|cf|nl)\.?"""
 private val PROTOCOL_PATTERN = """(http://|https://)"""
@@ -43,7 +46,6 @@ private val SUBDIRECTORY_PATTERN = """((/[-_+%&?a-zA-Z0-9]+)+)"""
 
 private val DEFINITE_URL_PATTERN = """\b${PROTOCOL_PATTERN}${DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?"""
 private val PROBABLE_URL_PATTERN = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?)"""
-private val PROBABLE_URL_PATTERN2 = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN2}${SUBDIRECTORY_PATTERN}?)"""
 private val PROBABLE_URL_PATTERN3 = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN3}${SUBDIRECTORY_PATTERN}?)"""
 
 
@@ -225,9 +227,6 @@ data class ChatMessage(
           Url(matcher.group(0))
         },
         Pair(PROBABLE_URL_PATTERN) { matcher ->
-          Url(matcher.group(2))
-        },
-        Pair(PROBABLE_URL_PATTERN2) { matcher ->
           Url(matcher.group(2))
         },
         Pair(PROBABLE_URL_PATTERN3) { matcher ->
