@@ -237,11 +237,7 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
 
     mainPanel.add(
       inputDirLabel,
-      makeConstraints(
-        gridx = 1,
-        gridy = 1,
-        insets = makeInsets(5)
-      )
+      makeConstraints(gridx = 1, gridy = 1, insets = makeInsets(5))
     )
 
     mainPanel.add(
@@ -257,20 +253,12 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
 
     mainPanel.add(
       inputDirBrowseButton,
-      makeConstraints(
-        gridx = 3,
-        gridy = 1,
-        insets = makeInsets(5)
-      )
+      makeConstraints(gridx = 3, gridy = 1, insets = makeInsets(5))
     )
 
     mainPanel.add(
       outputFileLabel,
-      makeConstraints(
-        gridx = 1,
-        gridy = 2,
-        insets = makeInsets(5)
-      )
+      makeConstraints(gridx = 1, gridy = 2, insets = makeInsets(5))
     )
 
     mainPanel.add(
@@ -286,11 +274,7 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
 
     mainPanel.add(
       outputFileBrowseButton,
-      makeConstraints(
-        gridx = 3,
-        gridy = 2,
-        insets = makeInsets(5)
-      )
+      makeConstraints(gridx = 3, gridy = 2, insets = makeInsets(5))
     )
 
     //Empty panel
@@ -362,16 +346,19 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
 
       while (true) {
         val result = chooser.showSaveDialog(this)
+        val newFileName = when {
+          chooser.selectedFile.path.endsWith(".xlsx") -> chooser.selectedFile.path
+          else -> chooser.selectedFile.path + ".xlsx"
+        }
         if (result == JFileChooser.APPROVE_OPTION) {
           //JFileChooser doesn't append the extension if it is not entered:
-          if (!outputFileField.text.endsWith(".xlsx")) outputFileField.text = outputFileField.text + ".xlsx"
           val response = promptForOverwrite(
             this,
-            programOptions.outputFile!!,
-            msgFileName="output file"
+            File(newFileName),
+            msgFileName = "output file"
           )
-          if (response.toProceed()){
-            outputFileField.text = chooser.selectedFile.path
+          if (response.toProceed()) {
+            outputFileField.text = newFileName
             programOptions.overwriteOutputFile = response.toOverwrite()
           }
           if (!response.toRepeatFileSelection()) break
