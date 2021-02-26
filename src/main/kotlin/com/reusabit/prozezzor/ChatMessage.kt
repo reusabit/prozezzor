@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.reusabit.prozezzor
 
@@ -25,18 +25,22 @@ private val HOUR24_PATTERN = """(2[0123]|[01][0-9])"""
 private val MINUTE_PATTERN = """([0-5][0-9])"""
 private val SECOND_PATTERN = """(60|[0-5][0-9])""" //Supports leap seconds.
 private val TIME_PATTERN = """$HOUR24_PATTERN:$MINUTE_PATTERN:$SECOND_PATTERN"""
-private val HEADER_PATTERN = """$TIME_PATTERN\t From  (.*?) : (.*)"""
-private val HEADER_PATTERN_DIRECT_MESSAGE = """$TIME_PATTERN\t From  (.*?)  to  (.*?)\(Direct message\) : (.*)"""
+private val HEADER_PATTERN = """($TIME_PATTERN)\t From  (.*?) : (.*)"""
+private val HEADER_PATTERN_DIRECT_MESSAGE = """($TIME_PATTERN)\t From  (.*?)  to  (.*?)\(Direct message\) : (.*)"""
 private val PHONE_PATTERN = """[(]?\b[0-9]{3}[ \t]*[-).]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
 
 //Note: The shorter alternative (single character) must come last, because regex-directed engines are eager and stop at first match.
 //(A text-based engine, if it is ever substituted, should still work with this approach, because it will match the longest match.)
 private val DOMAIN_SERVER_PATTERN = """([a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9])"""
+
 //TLD must have a non-digit:
-private val DOMAIN_SERVER_TLD_PATTERN = """([a-zA-Z][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z]|[a-zA-Z])"""
+private val DOMAIN_SERVER_TLD_PATTERN =
+"""([a-zA-Z][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z]|[a-zA-Z])"""
 private val DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})+\.?"""
+
 //Has at least three server names, eg. "www.example.com" rather than "example.com":
-private val PROBABLE_DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){1,}(\.${DOMAIN_SERVER_TLD_PATTERN})\.?"""
+private val PROBABLE_DOMAIN_PATTERN =
+"""${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){1,}(\.${DOMAIN_SERVER_TLD_PATTERN})\.?"""
 private val PROBABLE_DOMAIN_PATTERN3 =
 """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})*\.(com|net|org|gov|mil|io|info|dev|de|icu|uk|ru|top|xyz|tk|cn|ga|cf|nl)\.?"""
 private val PROTOCOL_PATTERN = """(http://|https://)"""
@@ -76,7 +80,8 @@ class MatchAgainstImpl<R : Any>(val patternString: String, val action: (matcher:
     val matcher = pattern.matcher(s)
     if (matcher.matches()) {
       return action(matcher)
-    } else return Pair(null, s)
+    }
+    else return Pair(null, s)
   }
 }
 
@@ -136,40 +141,48 @@ data class ChatMessage(
   val url: List<Url> = ArrayList(),
   val linkedin: List<Url> = ArrayList(),
   val email: List<Email> = ArrayList(),
-  val lines: List<String> = ArrayList()
+  val linesRaw: List<String> = ArrayList(),
+  val lines: List<String> = ArrayList(),
 ) {
   companion object {
     @JvmStatic
-    fun fromLines(lines: List<String>): ChatMessage {
-      if (lines.isEmpty()) throw IllegalArgumentException("fromLines called with zero lines")
-      val (header, headerRemainder) = Header.matchAgainst(lines.first())
+    fun fromLines(linesRaw: List<String>): ChatMessage {
+      if (linesRaw.isEmpty()) throw IllegalArgumentException("fromLines called with zero lines")
+      val (header, headerRemainder) = Header.matchAgainst(linesRaw.first())
       if (header == null) throw IllegalArgumentException("fromLines: first line didn't match a header.")
       val phone = LinkedList<PhoneNumber>()
       val url = LinkedList<Url>()
       val email = LinkedList<Email>()
-      lines.forEachIndexed { i, line ->
-        val s = when {
+
+      val lines = linesRaw.mapIndexed { i, line ->
+        when {
           i == 0 -> headerRemainder
           else -> line
         }
-        phone.addAll(PhoneNumber.findAllIn(s))
-        url.addAll(Url.findAllIn(s))
-        email.addAll(Email.findAllIn(s))
       }
+
+      lines.forEachIndexed { i, line ->
+        phone.addAll(PhoneNumber.findAllIn(line))
+        url.addAll(Url.findAllIn(line))
+        email.addAll(Email.findAllIn(line))
+      }
+
       return ChatMessage(
         header = header,
         //personName = header.fromName,
         phone = phone,
-        url = url.filter{!it.isLinkedIn && it.raw !in listOf("gmail.com")},
-        linkedin = url.filter{it.isLinkedIn},
+        url = url.filter { !it.isLinkedIn && it.raw !in listOf("gmail.com") },
+        linkedin = url.filter { it.isLinkedIn },
         email = email,
-        lines = ArrayList<String>().apply{addAll(lines)} //defensive copy
+        linesRaw = ArrayList<String>().apply { addAll(linesRaw) }, //defensive copy
+        lines = lines,
       )
     }
   }
 
 
   data class Header(
+    val time: String,
     /**
      *  The name of the person who sent the message if specified.
      * Will be null if unspecified, or empty string if the name field was empty.
@@ -182,25 +195,22 @@ data class ChatMessage(
       MatchAgainst<Header> by MatchAgainstMultiImpl<Header>(
         listOf(
           Pair(HEADER_PATTERN) { matcher ->
-            val fromName = matcher.group(4)
-            val remainder = matcher.group(5)
             Pair(
               Header(
-                fromName = fromName,
+                time = matcher.group(1),
+                fromName = matcher.group(5),
               ),
-              remainder
+              matcher.group(6) //Remainder
             )
           },
           Pair(HEADER_PATTERN_DIRECT_MESSAGE) { matcher ->
-            val fromName = matcher.group(4)
-            val toName = matcher.group(5)
-            val remainder = matcher.group(6)
             Pair(
               Header(
-                fromName = fromName,
-                toName = toName,
+                time = matcher.group(1),
+                fromName = matcher.group(5),
+                toName = matcher.group(6),
               ),
-              remainder
+              matcher.group(7)
             )
           },
         )
@@ -234,7 +244,7 @@ data class ChatMessage(
         },
       )
     )
-    
+
     val isLinkedIn: Boolean by lazy {
       raw.matches(LINKEDIN_REGEX)
     }

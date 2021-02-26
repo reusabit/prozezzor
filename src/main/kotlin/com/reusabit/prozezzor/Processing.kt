@@ -18,19 +18,13 @@ package com.reusabit.prozezzor
 
 import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileReader
-import java.io.InputStreamReader
 import java.io.UncheckedIOException
 import java.lang.RuntimeException
-import java.lang.StringBuilder
 import java.nio.file.AccessDeniedException
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.NotDirectoryException
 import java.util.*
-import kotlin.io.path.isReadable
-import kotlin.io.path.isRegularFile
 
 /** Returns error message if exception, null otherwise. */
 fun doProcessingCatchExceptions(programOptions: ProgramOptions): String? {
@@ -52,17 +46,21 @@ fun doProcessingCatchExceptions(programOptions: ProgramOptions): String? {
 fun doProcessing(programOptions: ProgramOptions) {
   val files = enumerateFiles(programOptions)
   val messages = LinkedList<ChatMessage>()
+
   files.forEach {
     messages.addAll(processFile(it))
   }
+
+  val messagesDedup = messages.distinctBy { it.lines }
+
   //println("")
   //println("")
-  val records = disambiguate(messages)
+  val records = disambiguate(messagesDedup)
   //records.forEachIndexed{i, record->
   //  println("record [$i]: $record")
   //}
 
-  val workbook = buildSpreadsheet(records)
+  val workbook = buildSpreadsheet(records, messagesDedup)
 
   writeSpreadsheet(workbook, programOptions.outputFile, programOptions.overwriteOutputFile)
 }
@@ -78,9 +76,17 @@ fun enumerateFiles(programOptions: ProgramOptions, maxFilesToProcess: Int = MAX_
   if (!dir.isDirectory) throw NotDirectoryException("dir [$dir] is not a directory")
 
   var counter = 0
-  Files.walk(dir.toPath()).map{it.toFile()}.forEach {
-    if (counter++ > MAX_FILES_TO_PROCESS)
-      throw TooManyFilesException("Encountered too many files during processing. Max files = $MAX_FILES_TO_PROCESS")
+  Files.walk(dir.toPath())
+  .map {
+    it.toFile().let {
+      Pair(it, it.lastModified())
+    }
+  }
+  .sorted(compareBy { it.second }) //last modified
+  .map{it.first}
+  .forEach {
+    if (counter++ > maxFilesToProcess)
+      throw TooManyFilesException("Encountered too many files during processing. Max files = $maxFilesToProcess")
     if (it.isFile) {
       if (it.extension == "txt") results.add(it)
     }
@@ -91,7 +97,7 @@ fun enumerateFiles(programOptions: ProgramOptions, maxFilesToProcess: Int = MAX_
 
 fun processFile(file: File): List<ChatMessage> {
   println("Processing [$file]...")
-  BufferedReader(FileReader(file)).use {input ->
+  BufferedReader(FileReader(file)).use { input ->
     return extractMessages(input);
   }
 }

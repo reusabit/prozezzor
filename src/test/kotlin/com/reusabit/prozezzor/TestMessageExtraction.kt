@@ -21,15 +21,28 @@ class TestMessageExtraction {
     assertThat(messages.size).isEqualTo(2)
     assertThat(messages[0]).isEqualTo(
       ChatMessage(
-        header = ChatMessage.Header(fromName = "First Last"),
-        lines = listOf("14:19:33\t From  First Last : F22 Company Corp")
+        header = ChatMessage.Header(
+          time = "14:19:33",
+          fromName = "First Last"
+        ),
+        linesRaw = listOf("14:19:33\t From  First Last : F22 Company Corp"),
+        lines = listOf("F22 Company Corp"),
       )
     )
     assertThat(messages[1]).isEqualTo(
       ChatMessage(
-        header = ChatMessage.Header(fromName = "First Last"),
-        lines = listOf(
+        header = ChatMessage.Header(
+          time = "14:20:19",
+          fromName = "First Last"
+        ),
+        linesRaw = listOf(
           "14:20:19\t From  First Last : First Last",
+          "1234 Something Somewhere Lane NW #222",
+          "Albuquerque, NM 88888",
+          "(505) 123-1234",
+        ),
+        lines = listOf(
+          "First Last",
           "1234 Something Somewhere Lane NW #222",
           "Albuquerque, NM 88888",
           "(505) 123-1234",
