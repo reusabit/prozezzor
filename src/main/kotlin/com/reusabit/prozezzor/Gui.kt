@@ -396,12 +396,21 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
         val programOptions0 = programOptions.build()
         val error = doProcessingCatchExceptions(programOptions0)
         if (error == null) {
-          JOptionPane.showMessageDialog(
+          val options = arrayOf("Ok", "Open")
+          val choice = JOptionPane.showOptionDialog(
             this,
             "The spreadsheet was created successfully. Saved to ${programOptions.outputFile}",
             "Success",
-            JOptionPane.INFORMATION_MESSAGE
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            options,
+            options[0]
           )
+          if (choice == 1) {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN))
+              Desktop.getDesktop().open(programOptions0.outputFile);
+          }
         }
         else {
           processingError(error)
