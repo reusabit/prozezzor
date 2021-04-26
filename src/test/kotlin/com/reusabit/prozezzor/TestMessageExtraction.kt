@@ -17,7 +17,7 @@ private val MESSAGE = """
 
 class TestMessageExtraction {
   @Test
-  fun testExtractMessages() {
+  fun testNoToPortion() {
     val messages = extractMessages(BufferedReader(StringReader(MESSAGE)))
 
     assertThat(messages.size).isEqualTo(2)
@@ -57,7 +57,7 @@ class TestMessageExtraction {
   }
 
   @Test
-  fun testExtractMessagesPrivateMessage() {
+  fun privateMessage() {
     //It looks like zoom stopped using a tab character after the timestamp.
     //Patterns have been updated to make this optional.
     //This message does not have a tab.
@@ -106,5 +106,11 @@ class TestMessageExtraction {
         linkedin = listOf(ChatMessage.Url("https://www.linkedin.com/in/john-doe/"))
       )
     )
+  }
+
+  @Test
+  fun singleLineEmail() {
+    val PRIVATE_MESSAGE = """
+      """.trimIndent()
   }
 }
