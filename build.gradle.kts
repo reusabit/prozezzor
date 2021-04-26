@@ -94,7 +94,8 @@ tasks.create("buildInstaller", com.install4j.gradle.Install4jTask::class.java) {
   projectFile = file("install.install4j")
   dependsOn(":installDist")
 
-  macKeystorePassword = project.property("macKeystorePassword") as String
+  if (project.hasProperty("macKeystorePassword"))
+    macKeystorePassword = project.property("macKeystorePassword") as String
 
 
 }
