@@ -25,8 +25,8 @@ private val HOUR24_PATTERN = """(2[0123]|[01][0-9])"""
 private val MINUTE_PATTERN = """([0-5][0-9])"""
 private val SECOND_PATTERN = """(60|[0-5][0-9])""" //Supports leap seconds.
 private val TIME_PATTERN = """$HOUR24_PATTERN:$MINUTE_PATTERN:$SECOND_PATTERN"""
-private val HEADER_PATTERN = """($TIME_PATTERN)\t From  (.*?) : (.*)"""
-private val HEADER_PATTERN_DIRECT_MESSAGE = """($TIME_PATTERN)\t From  (.*?)  to  (.*?)\(Direct message\) : (.*)"""
+private val HEADER_PATTERN =                """($TIME_PATTERN)\t? From  (.*?) : (.*)"""
+private val HEADER_PATTERN_DIRECT_MESSAGE = """($TIME_PATTERN)\t? From  (.*?)  to  (.*?)(\(Direct message\))? : (.*)"""
 private val PHONE_PATTERN = """[(]?\b[0-9]{3}[ \t]*[-).]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
 
 //Note: The shorter alternative (single character) must come last, because regex-directed engines are eager and stop at first match.
@@ -35,18 +35,18 @@ private val DOMAIN_SERVER_PATTERN = """([a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-z
 
 //TLD must have a non-digit:
 private val DOMAIN_SERVER_TLD_PATTERN =
-"""([a-zA-Z][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z]|[a-zA-Z])"""
+  """([a-zA-Z][-a-zA-Z0-9]*[a-zA-Z0-9]|[a-zA-Z0-9][-a-zA-Z0-9]*[a-zA-Z]|[a-zA-Z])"""
 private val DOMAIN_PATTERN = """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})+\.?"""
 
 //Has at least three server names, eg. "www.example.com" rather than "example.com":
 private val PROBABLE_DOMAIN_PATTERN =
-"""${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){1,}(\.${DOMAIN_SERVER_TLD_PATTERN})\.?"""
+  """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN}){1,}(\.${DOMAIN_SERVER_TLD_PATTERN})\.?"""
 private val PROBABLE_DOMAIN_PATTERN3 =
-"""${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})*\.(com|net|org|gov|mil|io|info|dev|de|icu|uk|ru|top|xyz|tk|cn|ga|cf|nl)\.?"""
+  """${DOMAIN_SERVER_PATTERN}(\.${DOMAIN_SERVER_PATTERN})*\.(com|net|org|gov|mil|io|info|dev|de|icu|uk|ru|top|xyz|tk|cn|ga|cf|nl)\.?"""
 private val PROTOCOL_PATTERN = """(http://|https://)"""
 
 // This is simplified somewhat in order to pick up "common" urls. Businesses shouldn't be using big, ugly urls for contact information.
-private val SUBDIRECTORY_PATTERN = """((/[-_+%&?a-zA-Z0-9]+)+)"""
+private val SUBDIRECTORY_PATTERN = """((/+[-_+%&?a-zA-Z0-9]+)+/*)"""
 
 private val DEFINITE_URL_PATTERN = """\b${PROTOCOL_PATTERN}${DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?"""
 private val PROBABLE_URL_PATTERN = """(?<![@])(^|[ \t])(${PROBABLE_DOMAIN_PATTERN}${SUBDIRECTORY_PATTERN}?)"""
@@ -73,7 +73,7 @@ interface MatchAgainst<R : Any> {
  * Designed for matching heading lines.
  */
 class MatchAgainstImpl<R : Any>(val patternString: String, val action: (matcher: Matcher) -> Pair<R, String>) :
-  MatchAgainst<R> {
+MatchAgainst<R> {
   val pattern = Pattern.compile(patternString)
 
   override fun matchAgainst(s: String): Pair<R?, String> {
@@ -90,7 +90,7 @@ class MatchAgainstImpl<R : Any>(val patternString: String, val action: (matcher:
  * result from first successful match, or no result if none match.
  */
 class MatchAgainstMultiImpl<R : Any>(val patternStrings: List<Pair<String, (matcher: Matcher) -> Pair<R, String>>>) :
-  MatchAgainst<R> {
+MatchAgainst<R> {
   val matchAgainsts = patternStrings.map { MatchAgainstImpl<R>(it.first, it.second) }
 
   override fun matchAgainst(s: String): Pair<R?, String> {
@@ -192,29 +192,29 @@ data class ChatMessage(
     val toName: String? = null,
   ) {
     companion object :
-      MatchAgainst<Header> by MatchAgainstMultiImpl<Header>(
-        listOf(
-          Pair(HEADER_PATTERN) { matcher ->
-            Pair(
-              Header(
-                time = matcher.group(1),
-                fromName = matcher.group(5),
-              ),
-              matcher.group(6) //Remainder
-            )
-          },
-          Pair(HEADER_PATTERN_DIRECT_MESSAGE) { matcher ->
-            Pair(
-              Header(
-                time = matcher.group(1),
-                fromName = matcher.group(5),
-                toName = matcher.group(6),
-              ),
-              matcher.group(7)
-            )
-          },
-        )
-      ) {
+    MatchAgainst<Header> by MatchAgainstMultiImpl<Header>(
+      listOf(
+        Pair(HEADER_PATTERN_DIRECT_MESSAGE) { matcher ->
+          Pair(
+            Header(
+              time = matcher.group(1),
+              fromName = matcher.group(5),
+              toName = matcher.group(6),
+            ),
+            matcher.group(8)
+          )
+        },
+        Pair(HEADER_PATTERN) { matcher ->
+          Pair(
+            Header(
+              time = matcher.group(1),
+              fromName = matcher.group(5),
+            ),
+            matcher.group(6) //Remainder
+          )
+        }
+      )
+    ) {
 
     }
   }

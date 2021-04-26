@@ -32,9 +32,10 @@ fun extractMessages(input: BufferedReader): List<ChatMessage> {
   val results = LinkedList<ChatMessage>()
 
   input.lines().forEach { line ->
-    //println("line: $line")
+    println("line: $line")
     val (header, extraText) = ChatMessage.Header.matchAgainst(line)
     if (header != null) {
+      println("header != null")
       processMessage(buffer)?.let { results.add(it) }
       buffer.clear()
       buffer.add(line) //Unconditionally add the header line.
