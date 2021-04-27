@@ -1,0 +1,25 @@
+Copyright 2021 Reusabit Software LLC
+
+End User License Agreement
+
+This End User License Agreement (the “EULA”) is a legal agreement between you (either an individual or a single legal entity) and Reusabit Software LLC (“Reusabit”).
+
+This binary package contains software and associated documentation files (the “Application”) developed by Reusabit Software LLC, bundled together with its dependencies (the “Dependencies”). This EULA pertains to the Application and those of the Dependencies which Reusabit has the actual right to distribute according to the terms of this agreement (collectively, the “Software”). The remainder of the Dependencies are distributed under their respective licenses, some of which might grant additional rights to you (which pertain only to that Dependency). For more information about Dependencies and to obtain source code to which you are entitled, email oss@reusabit.com.
+
+Note that the Application’s source code (without the bundled installer and other Dependencies) might be available to you under a separate open-source license. See https://github.com/reusabit/prozezzor for more information.
+
+Copies of the Software created or transferred pursuant to this EULA are licensed, not sold, and you receive no title to or ownership of any copy or of the Software itself. Furthermore, you receive no rights to the Software other than those specifically granted in this EULA.
+
+Permission is hereby granted to you, free of charge, to copy, install, and use the Software, provided that:
+1. You accept and agree to all of the terms and conditions of this EULA.
+2. You only copy or distribute the Software in its entirety, without any modifications to its installation package, with the above copyright notice and this End User License Agreement.
+3. You do not modify, create derivative works from, publicly display, publicly perform, or sublicense the Software.
+4. You do not reverse engineer, decompile, disassemble, or otherwise attempt to derive any of the Software’s source code.
+5. You do not remove any proprietary legends or notices contained in or on the Software.
+6. You agree that the software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall Reusabit, the authors, or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
+
+If any provision of this EULA is held invalid, the remainder of this EULA shall continue in full force and effect.
+
+All matters relating to the interpretation, construction, application, validity, and enforcement of this EULA will be governed by the laws of the State of New Mexico without giving effect to any choice or conflict of law provision or rule, whether of the State of New Mexico or any other jurisdiction, that would cause the application of laws of any jurisdiction other than the State of New Mexico.
+
+You consent to jurisdiction of the courts of the State of New Mexico at Albuquerque, Bernalillo County, New Mexico for the purpose of resolving any issues which may be permitted to be decided by a Court of competent jurisdiction, in accordance with the provisions of this EULA.

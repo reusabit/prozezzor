@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="9.0.1" transformSequenceNumber="9">
+  <directoryPresets config="./src/installer/resources" />
   <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="Prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="15">
     <searchSequence>
       <registry />
@@ -88,6 +89,38 @@ return console.askOkCancel(message, true);
                 <serializedBean>
                   <property name="labelText" type="string">${i18n:ClickNext}</property>
                 </serializedBean>
+              </formComponent>
+            </formComponents>
+          </screen>
+          <screen id="63" beanClass="com.install4j.runtime.beans.screens.LicenseScreen" rollbackBarrierExitCode="0">
+            <formComponents>
+              <formComponent id="64" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
+                <serializedBean>
+                  <property name="labelText" type="string">${i18n:LicenseLabel3}</property>
+                </serializedBean>
+              </formComponent>
+              <formComponent id="65" beanClass="com.install4j.runtime.beans.formcomponents.LicenseComponent" useExternalParametrization="true" externalParametrizationName="License Agreement" externalParametrizationMode="include">
+                <serializedBean>
+                  <property name="displayedTextFile" id="LocalizedExternalFile0">
+                    <property name="languageIdToExternalFile">
+                      <entry>
+                        <string>en</string>
+                        <object class="com.install4j.api.beans.ExternalFile">
+                          <string>./src/installer/resources/eula_for_installer.txt</string>
+                        </object>
+                      </entry>
+                    </property>
+                  </property>
+                  <property name="fillVertical" type="boolean" value="true" />
+                </serializedBean>
+                <externalParametrizationPropertyNames>
+                  <propertyName>textSource</propertyName>
+                  <propertyName>displayedText</propertyName>
+                  <propertyName>displayedTextFile</propertyName>
+                  <propertyName>variableName</propertyName>
+                  <propertyName>acceptInitiallySelected</propertyName>
+                  <propertyName>readAllRequired</propertyName>
+                </externalParametrizationPropertyNames>
               </formComponent>
             </formComponents>
           </screen>
