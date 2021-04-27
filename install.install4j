@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="9.0.1" transformSequenceNumber="9">
-  <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="15">
+  <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="Prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="15">
     <searchSequence>
       <registry />
     </searchSequence>
@@ -19,7 +19,7 @@
     </entries>
   </files>
   <launchers>
-    <launcher name="prozezzor-gui" id="62">
+    <launcher name="Prozezzor" id="62" menuName="Prozezzor">
       <executable name="Prozezzor" iconSet="true" executableMode="gui" checkConsoleParameter="true" />
       <java mainClass="com.reusabit.prozezzor.ProzezzorKt" arguments="--gui" allowVMPassthroughParameters="false">
         <classPath>
@@ -477,7 +477,11 @@ return console.askYesNo(message, true);
     </styles>
   </installerGui>
   <mediaSets>
-    <windows name="Windows" id="59" />
-    <macosFolder name="macOS Folder" id="61" />
+    <windows name="Windows" id="59">
+      <jreBundle usePack200="false" />
+    </windows>
+    <macosFolder name="macOS Folder" id="61">
+      <jreBundle usePack200="false" />
+    </macosFolder>
   </mediaSets>
 </install4j>
