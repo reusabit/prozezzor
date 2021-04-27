@@ -11,4 +11,4 @@ echo ""
 read -s -p "macKeystorePassword: " macKeystorePassword
 echo ""
 
-./gradlew buildInstaller -PmacKeystorePassword=$macKeystorePassword
+./gradlew buildInstaller --console=plain -PmacKeystorePassword=$macKeystorePassword
