@@ -25,8 +25,8 @@ private val HOUR24_PATTERN = """(2[0123]|[01][0-9])"""
 private val MINUTE_PATTERN = """([0-5][0-9])"""
 private val SECOND_PATTERN = """(60|[0-5][0-9])""" //Supports leap seconds.
 private val TIME_PATTERN = """$HOUR24_PATTERN:$MINUTE_PATTERN:$SECOND_PATTERN"""
-private val HEADER_PATTERN =                """($TIME_PATTERN)\t? From  (.*?) : (.*)"""
-private val HEADER_PATTERN_DIRECT_MESSAGE = """($TIME_PATTERN)\t? From  (.*?)  to  (.*?)(\(Direct message\))? : (.*)"""
+private val HEADER_PATTERN =                """($TIME_PATTERN)[ \t]+From[ \t]+(.*?)[ \t]+:[ \t]+(.*)"""
+private val HEADER_PATTERN_DIRECT_MESSAGE = """($TIME_PATTERN)[ \t]+From[ \t]+(.*?)[ \t]+to[ \t]+(.*?)[ \t]*(\(Direct message\))?[ \t]*:[ \t]*(.*)"""
 private val PHONE_PATTERN = """[(]?\b[0-9]{3}[ \t]*[-).]?[ \t]*[0-9]{3}[ \t]*[-.]?[0-9]{4}\b"""
 
 //Note: The shorter alternative (single character) must come last, because regex-directed engines are eager and stop at first match.

@@ -129,4 +129,60 @@ class TestMessageExtraction {
       )
     )
   }
+
+  //Mac format observed to leave out extra spaces and tabs.
+  @Test
+  fun macFormat() {
+    // Contains tabs for the indented lines.
+    val PRIVATE_MESSAGE = """
+      17:16:02 From John Doe to Everyone:
+      ${'\t'}555-555-5555
+      17:16:07 From John Doe to Everyone:
+      ${'\t'}johndoe@gmail.com
+      """.trimIndent()
+
+    val messages = extractMessages(BufferedReader(StringReader(PRIVATE_MESSAGE)))
+    assertThat(messages.size).isEqualTo(2)
+    assertThat(messages[0]).isEqualTo(
+      ChatMessage(
+        header = ChatMessage.Header(
+          time = "17:16:02",
+          fromName = "John Doe",
+          toName = "Everyone"
+        ),
+        linesRaw = listOf(
+          "17:16:02 From John Doe to Everyone:",
+          "\t555-555-5555"
+        ),
+        lines = listOf(
+          "", "\t555-555-5555"
+        ),
+        email = listOf(),
+        phone = listOf(ChatMessage.PhoneNumber("555-555-5555")),
+        url = listOf(),
+        linkedin = listOf()
+      )
+    )
+    assertThat(messages[1]).isEqualTo(
+      ChatMessage(
+        header = ChatMessage.Header(
+          time = "17:16:07",
+          fromName = "John Doe",
+          toName = "Everyone"
+        ),
+        linesRaw = listOf(
+          "17:16:07 From John Doe to Everyone:",
+          "\tjohndoe@gmail.com"
+        ),
+        lines = listOf(
+          "",
+          "\tjohndoe@gmail.com"
+        ),
+        email = listOf(ChatMessage.Email("johndoe@gmail.com")),
+        phone = listOf(),
+        url = listOf(),
+        linkedin = listOf()
+      )
+    )
+  }
 }
