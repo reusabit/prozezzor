@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="9.0.1" transformSequenceNumber="9">
   <directoryPresets config="./src/installer/resources" />
-  <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="Prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="test1" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="15">
+  <application name="Prozezzor" applicationId="3368-6554-6738-2012" mediaDir="./build/installers" shortName="Prozezzor" publisher="Reusabit Software LLC" publisherWeb="htpps://reusabit.com" version="1.0.0" allPathsRelative="true" macVolumeId="696d6e41598b1509" javaMinVersion="1.8" javaMaxVersion="15">
     <searchSequence>
       <registry />
     </searchSequence>
