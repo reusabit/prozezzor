@@ -111,6 +111,22 @@ class TestMessageExtraction {
   @Test
   fun singleLineEmail() {
     val PRIVATE_MESSAGE = """
+      15:14:05 From  Jane Doe  to  Everyone : jane.doe@gmail.com
       """.trimIndent()
+    val messages = extractMessages(BufferedReader(StringReader(PRIVATE_MESSAGE)))
+    assertThat(messages[0]).isEqualTo(
+      ChatMessage(
+        header = ChatMessage.Header(
+          time = "15:14:05",
+          fromName = "Jane Doe",
+          toName = "Everyone"
+        ),
+        linesRaw = listOf("15:14:05 From  Jane Doe  to  Everyone : jane.doe@gmail.com"),
+        lines = listOf("jane.doe@gmail.com"),
+        email = listOf(ChatMessage.Email("jane.doe@gmail.com")),
+        url = listOf(),
+        linkedin = listOf()
+      )
+    )
   }
 }
