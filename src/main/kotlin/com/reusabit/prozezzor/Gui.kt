@@ -187,10 +187,12 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
 
   val help = JMenuItem("Instructions")
   val notices = JMenuItem("Third Party License Notices")
+  val about = JMenuItem("About")
   val menuBar = JMenuBar().apply {
     add(JMenu("Help").apply {
       add(help)
       add(notices)
+      add(about)
     })
   }
 
@@ -207,35 +209,16 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
 
     jMenuBar = menuBar
 
+    help.addActionListener { displayHelp() }
+    notices.addActionListener { displayNotices() }
+    about.addActionListener { aboutDialog() }
+
     iconImages = mutableListOf(
       ImageIO.read(javaClass.getResource("/icon16x16.png")) as Image,
       ImageIO.read(javaClass.getResource("/icon32x32.png")) as Image,
       ImageIO.read(javaClass.getResource("/icon48x48.png")) as Image,
       ImageIO.read(javaClass.getResource("/icon128x128.png")) as Image,
     )
-
-    help.addActionListener { e ->
-      if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-        Desktop.getDesktop().browse(URI(HELP_URL));
-      }
-      else {
-        JOptionPane.showMessageDialog(this, "Unable to open web browser", "Error", JOptionPane.ERROR_MESSAGE)
-      }
-    }
-
-    notices.addActionListener { e ->
-
-      if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-        val tempFile = File.createTempFile("prozezzor-third-party-notice-", ".txt")
-        val text = getNoticeText()
-        tempFile.writeText(text, Charsets.UTF_8)
-        Desktop.getDesktop().edit(tempFile)
-      }
-      else {
-        JOptionPane.showMessageDialog(this, "Unable to open text editor", "Error", JOptionPane.ERROR_MESSAGE)
-      }
-    }
-
 
     val mainPanel = JPanel().apply {
       contentPane.add(this, BorderLayout.CENTER)
@@ -438,9 +421,7 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     isVisible = true //Needs to be last.
   }
 
-  /**
-   * Must be called from the event thread.
-   */
+  /** Display an error dialog. Must be called from the event thread. */
   fun processingError(message: String) {
     JOptionPane.showMessageDialog(
       this,
@@ -450,6 +431,38 @@ class Gui(val programOptions: ProgramOptions.Builder) : JFrame("Prozezzor") {
     )
   }
 
+  /** Display the about dialog. Must be called from the event thread. */
+  fun aboutDialog() {
+    val version = VersionService().version
+    JOptionPane.showMessageDialog(
+      this,
+      "Prozezzor, version $version, Copyright 2021 Reusabit Software LLC",
+      "About",
+      JOptionPane.PLAIN_MESSAGE
+    )
+  }
 
+  /** Launch a text editor with the notices file. Must be called from the event thread. */
+  fun displayNotices() {
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+      val tempFile = File.createTempFile("prozezzor-third-party-notice-", ".txt")
+      val text = getNoticeText()
+      tempFile.writeText(text, Charsets.UTF_8)
+      Desktop.getDesktop().edit(tempFile)
+    }
+    else {
+      JOptionPane.showMessageDialog(this, "Unable to open text editor", "Error", JOptionPane.ERROR_MESSAGE)
+    }
+  }
+
+  /** Launch the browser to display help page. Must be called from the event thread. */
+  fun displayHelp() {
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+      Desktop.getDesktop().browse(URI(HELP_URL));
+    }
+    else {
+      JOptionPane.showMessageDialog(this, "Unable to open web browser", "Error", JOptionPane.ERROR_MESSAGE)
+    }
+  }
 }
 
