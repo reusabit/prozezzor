@@ -1,3 +1,4 @@
+
 /**
 Copyright 2021 Reusabit Software LLC
 
@@ -13,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-
 package com.reusabit.prozezzor
+
+
 
 import java.io.BufferedReader
 import java.io.File
@@ -25,6 +27,12 @@ import java.nio.file.AccessDeniedException
 import java.nio.file.Files
 import java.nio.file.NotDirectoryException
 import java.util.*
+import org.slf4j.LoggerFactory
+
+
+class Processing {}
+private val logger = LoggerFactory.getLogger(Processing::class.java)!!
+
 
 /** Returns error message if exception, null otherwise. */
 fun doProcessingCatchExceptions(programOptions: ProgramOptions): String? {
@@ -53,8 +61,6 @@ fun doProcessing(programOptions: ProgramOptions) {
 
   val messagesDedup = messages.distinctBy { it.lines }
 
-  //println("")
-  //println("")
   val records = disambiguate(messagesDedup)
   //records.forEachIndexed{i, record->
   //  println("record [$i]: $record")
@@ -96,7 +102,7 @@ fun enumerateFiles(programOptions: ProgramOptions, maxFilesToProcess: Int = MAX_
 }
 
 fun processFile(file: File): List<ChatMessage> {
-  println("Processing [$file]...")
+  logger.info("Processing [$file]...")
   BufferedReader(FileReader(file)).use { input ->
     return extractMessages(input);
   }

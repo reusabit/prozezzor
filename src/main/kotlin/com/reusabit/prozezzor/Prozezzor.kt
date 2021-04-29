@@ -21,6 +21,7 @@ import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.parameters.options.OptionWithValues
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import org.slf4j.LoggerFactory
 import java.io.File
 
 
