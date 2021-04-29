@@ -4,7 +4,9 @@ End User License Agreement
 
 This End User License Agreement (the “EULA”) is a legal agreement between you (either an individual or a single legal entity) and Reusabit Software LLC (“Reusabit”).
 
-This binary package contains software and associated documentation files (the “Application”) developed by Reusabit Software LLC, bundled together with its dependencies (the “Dependencies”). This EULA pertains to the Application and those of the Dependencies which Reusabit has the actual right to distribute according to the terms of this agreement (collectively, the “Software”). The remainder of the Dependencies are distributed under their respective licenses, some of which might grant additional rights to you (which pertain only to that Dependency). For more information about Dependencies and to obtain source code to which you are entitled, email oss@reusabit.com.
+This binary package contains software and associated documentation files (the “Application”) developed by Reusabit Software LLC, bundled together with its dependencies (the “Dependencies”). This EULA pertains to the Application and those of the Dependencies which Reusabit has the actual right to distribute or sublicense according to the terms of this agreement (collectively, the “Software”). The remainder of the Dependencies are distributed under their respective licenses, some of which might grant additional rights to you (which pertain only to that Dependency). For more information about Dependencies and to obtain source code to which you are entitled, email oss@reusabit.com.
+
+By copying, installing, or using the Software, you agree to the terms of this EULA.
 
 Note that the Application’s source code (without the bundled installer and other Dependencies) might be available to you under a separate open-source license. See https://github.com/reusabit/prozezzor for more information.
 
