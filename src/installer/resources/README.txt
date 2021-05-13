@@ -4,4 +4,4 @@ the source code, which is distributed according to the license in the
 LICENSE.txt file at the root of the repository.
 
 If you distribute your own installer, you must update the installer/eula
-to reflect the fact that Reusabit is not a party to the contract.
+to reflect the fact that Reusabit Software LLC is not a party to the contract.
