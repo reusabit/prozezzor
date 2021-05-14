@@ -30,7 +30,22 @@ Mac installer packages. This version also includes several updates for
 changes to the Zoom chat transcript format, and a number of other small bug
 fixes and feature enhancements since the pre-release versions.
 
+## Download
+
+By downloading or installing our prebuilt packages, you agree to the terms of
+the [EULA](https://github.com/reusabit/prozezzor/blob/master/src/installer/resources/eula_for_installer.txt).
+Note, the EULA for the binary packages is different than the license for the source code. (Unfortunately, we cannot make the installer
+package available under same Apache-2.0 license as the source code. However,
+the source code is Apache-2.0 licensed, and it does include a build script...)
+
+[Windows (x64)](https://github.com/reusabit/prozezzor/releases/download/v1.0.0/Prozezzor_windows-x64_1_0_0.exe)
+
+[Macos (x64)](https://github.com/reusabit/prozezzor/releases/download/v1.0.0/Prozezzor_macos_1_0_0.dmg)
+
 ## Build Instructions
+
+Alternatively, the adventurous may compile the application by following 
+these instructions:
 
 1. Install Java JDK, such as 
    [Amazon Corretto 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
