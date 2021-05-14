@@ -23,14 +23,12 @@ Prozezzor supports command line interface and GUI. It is written in Kotlin.
 
 ## Current Status
 
-(9Feb2021)
+(14May2021)
 
-The application is in early access status. At this time, 
-only source code is available, and users must compile the 
-application (using accompanying Gradle build script.)
-
-We are planning to release binary installer packages 
-for Windows and Mac.
+We have released version 1.0.0 of the application, which includes Windows and
+Mac installer packages. This version also includes several updates for
+changes to the Zoom chat transcript format, and a number of other small bug
+fixes and feature enhancements since the pre-release versions.
 
 ## Build Instructions
 
